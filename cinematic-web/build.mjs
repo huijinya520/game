@@ -1,0 +1,13 @@
+import {readFile,writeFile,mkdir,cp} from 'node:fs/promises';
+const root=new URL('./',import.meta.url),read=path=>readFile(new URL(path,root),'utf8');
+const assets={};for(const name of ['scenes','cast'])assets[name]=(await readFile(new URL(`assets/${name}.webp`,root))).toString('base64');
+const boot=`window.REDLINE_ASSETS={};for(const [key,data] of Object.entries(${JSON.stringify(assets)})){const bytes=Uint8Array.from(atob(data),c=>c.charCodeAt(0));window.REDLINE_ASSETS[key]=URL.createObjectURL(new Blob([bytes],{type:'image/webp'}));}\n`;
+const story=(await read('story.js')).replace(/^export /gm,''),app=(await read('app.js')).replace(/^import .* from '\.\/story\.js';\n/,'');
+const loadCSS=await read('style.css');let html=await read('index.html');html=html.replace('<link rel="stylesheet" href="style.css">',()=>'<style>'+loadCSS+'</style>');
+html=html.replace('<script type="module" src="app.js"></script>',()=>'<script type="module">'+boot+story+'\n'+app+'</script>');
+await writeFile(new URL('play-offline.html',root),html);const dist=new URL('dist/',root);await mkdir(dist,{recursive:true});
+for(const name of ['index.html','style.css','app.js','story.js','play-offline.html','docs'])await cp(new URL(name,root),new URL(name,dist),{recursive:true});
+await mkdir(new URL('assets/',dist),{recursive:true});
+for(const name of ['scenes.webp','cast.webp'])await cp(new URL('assets/'+name,root),new URL('assets/'+name,dist));
+await writeFile(new URL('.nojekyll',dist),'');
+console.log('Built standalone story game and dist/ static site');

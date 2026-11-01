@@ -1,9 +1,9 @@
-name: Publish classroom game
+name: Publish story game
 on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['classroom-publish/site/**', '.github/workflows/pages.yml']
+    paths: ['cinematic-web/**', '.github/workflows/pages.yml']
 permissions:
   contents: read
   pages: write
@@ -19,10 +19,19 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Verify story paths and saves
+        run: npm test
+        working-directory: cinematic-web
+      - name: Build the static site and offline file
+        run: npm run build
+        working-directory: cinematic-web
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: classroom-publish/site
+          path: cinematic-web/dist
       - name: Publish
         id: deployment
         uses: actions/deploy-pages@v4
