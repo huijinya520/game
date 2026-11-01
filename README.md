@@ -8,10 +8,18 @@
 
 ## 游玩与剧本
 
-- 在线地址预期为 `https://huijinya520.github.io/game/`。只有 GitHub Pages 部署成功后才可用；仓库页面本身不运行游戏。
+- **[点击在线游玩](https://huijinya520.github.io/game/)**：GitHub Pages 已发布，无需下载或安装。点击“接起这通电话”开始。
 - [单文件备用版](cinematic-web/play-offline.html)：在 GitHub 文件页使用 **Download raw file** 保存 HTML，再用 Chrome、Edge、Firefox 或 Safari 打开。人物、场景和程序全部内嵌，打开文件后不需要联网。
 - [阅读新版完整剧本](cinematic-web/docs/故事剧本.md) / [Word 版剧本](cinematic-web/docs/最后一道红线-故事交互版剧本.docx)。含结局，注意剧透。
 - [课堂展示与发布说明](cinematic-web/README.md)。
+
+## 本次验证
+
+- 七种结局分别通过浏览器实际点击走通；每条路线包含 15 个场景与 13 次决定。
+- 规则测试覆盖 1,000 次不同路线，已检查刷新续玩、手机大字、禁用存储与损坏存档。
+- 离线单文件在不加载其他网络资源时仍能显示美术并推进故事。
+- [首次新版发布记录](https://github.com/huijinya520/game/actions/runs/41328063177)：剧情测试、构建与 Pages 发布全部成功。
+- 网页运行资源共 651,594 字节（压缩传输前）；单文件 843,778 字节。当前执行环境的网络策略阻止直接访问 github.io，线上状态以 GitHub 的成功部署记录与返回的页面地址为依据，未声称已在用户的网络中打开验证。
 
 ## 开发
 
