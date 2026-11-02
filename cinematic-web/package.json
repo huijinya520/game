@@ -1,1 +1,11 @@
-{"name":"the-last-red-line-story","version":"4.0.0","private":true,"type":"module","scripts":{"start":"node server.mjs","test":"node --test tests/story.test.mjs","build":"node build.mjs"}}
+{
+  "name": "the-last-red-line-story",
+  "version": "5.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test tests/story.test.mjs",
+    "build": "node build.mjs"
+  }
+}

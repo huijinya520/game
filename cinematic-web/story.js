@@ -1,86 +1,114 @@
-// Fictional narrative adaptation of the two user-supplied documents.
-export const chapters=['一通没挂断的电话','天亮以前','九点的来客','没有人删掉那句话','留下的人','空下来的厂房','你离开之后'];
-export const cast={you:{name:'你',role:'刚接手协调工作的人',portrait:0},mathieu:{name:'马修',role:'工程师 · 习惯最后一个离开',portrait:1},victor:{name:'维克多',role:'财务负责人 · 也在担心明天',portrait:2},erin:{name:'艾琳',role:'质量工程师 · 那条语音的主人',portrait:3},claire:{name:'克莱尔',role:'员工代表 · 记得每一个名字',portrait:4},faury:{name:'Faury',role:'CEO · 戏剧化角色',portrait:5},narrator:{name:'',role:''},client:{name:'客户',role:'机场另一端的电话'},worker:{name:'食堂里的工人',role:'夜班刚结束'}};
-const l=(who,text)=>({who,text});
-const c=(id,label,next,reply,delta={},flags=[])=>({id,label,next,reply,delta,flags});
+// Narrative and deterministic game systems. All internal scenes and game resources are fictional.
+export const chapters=['第一幕 · 留在地面','第二幕 · 灯熄以后','第三幕 · 重返蓝天'];
+export const cast={you:{name:'我',role:'工业协调员 · 第一次走进机库',portrait:0},mathieu:{name:'马修',role:'资深工程师 · 想继续留在工位',portrait:1},victor:{name:'维克多',role:'财务负责人 · 每个日期都要兑现',portrait:2},erin:{name:'艾琳',role:'质量工程师 · 拿着未完成的记录',portrait:3},claire:{name:'克莱尔',role:'员工代表 · 记得每一个名字',portrait:4},faury:{name:'福里（Faury）',role:'集团负责人 · 基于真实人物的虚构对白',portrait:5},narrator:{name:'',role:''},client:{name:'客户',role:'已经安排好机组的人'}};
+function asMe(text){return text.split(/(“[^”]*”)/g).map((part,i)=>i%2?part:part.replaceAll('你','我')).join('')}
+const l=(who,text)=>({who,text:['you','narrator'].includes(who)?asMe(text):text});
+const c=(id,label,next,reply,flags=[],requires=null)=>({id,label,next,reply:asMe(reply),flags,requires});
+const op=(type,label,title,body)=>({type,label,title,body});
 export const scenes={
-phone:{chapter:0,title:'凌晨 02:17',place:'办公室 · 雨夜',time:'02:17',bg:0,lead:'手机第三次亮起来。',lines:[l('narrator','你接手这份工作的第一晚，办公室里只剩下一盏灯。今天早上九点，一架飞机要交到客户手里。'),l('narrator','你的工作很简单：把各部门的消息问清楚，再交给负责签字的人。至少，昨天他们是这样说的。')],interaction:{type:'phone',label:'拿起手机',title:'一条还没说完的语音',body:'艾琳：你睡了吗？我知道早上九点要签字……但你先看一下桌上的两份记录。\n\n语音末尾传来关门声。她没有挂断，过了几秒，又补了一句：\n“也许只是我多心了。”'},next:'desk',continue:'看看她说的文件'},
-desk:{chapter:0,title:'同一件事，两种说法',place:'办公桌前',time:'02:21',bg:0,lead:'纸上的字，不像电话里那么犹豫。',lines:[l('narrator','一张纸盖着“已处理”的章，另一张边角卷起，写着“已安排复核”。'),l('you','安排了检查，和检查已经通过……应该不是一回事。')],interaction:{type:'compare',label:'把两份记录放到一起',title:'结论从哪里变了？',body:'你对齐了两张纸的日期和编号。它们说的是同一件事。\n\n目前只能确认措辞不同。还不能证明飞机出了故障，也不能证明有人故意隐瞒。'},choices:[c('keep','把两份记录都带走','corridor','你把卷起的纸角压平，将两份记录一起放进外套内侧。',{transparency:2},['evidence']),c('leave','先拿走已经签过的摘要','corridor','你留下了手写记录。也许，早班的人能解释清楚。',{transparency:-2},['omit'])]},
-corridor:{chapter:1,title:'两扇亮着灯的门',place:'总部走廊',time:'05:46',bg:0,lead:'你还有时间，先去见一个人。',lines:[l('narrator','雨小了。马修的工位在厂房里，维克多的办公室在走廊尽头。手机上各有一条未读消息。'),l('mathieu','我还在。咖啡也还在，不过已经凉了。'),l('victor','我没有催你。只是想让你看一眼，如果今天交不了，我们接下来会遇到什么。')],interaction:{type:'route',label:'走到亮灯的门前',title:'从哪里开始',body:'门没有锁。你只需要决定先跟谁说话。'},choices:[c('workshop','推开厂房的门','engineer','你循着工具碰撞的声音，找到了马修。',{},['first_engineer']),c('office','敲一敲维克多的门','finance','门内传来一句“进来”。维克多把对面的椅子往外拉了拉。',{},['first_finance'])]},
-engineer:{chapter:1,title:'凉掉的咖啡',place:'维修工位',time:'06:03',bg:1,lead:'他盯着纸，没有看你。',lines:[l('mathieu','我不是说一定有故障。我是说，我们还没有查完。'),l('you','那为什么最后写成了“已处理”？'),l('mathieu','可能只是传错了版本。也可能有人以为，安排了检查就算处理过了。'),l('narrator','他的手机震了一下：家里发来一张早餐照片。他看了看，又把手机扣下。'),l('mathieu','你要查，我把东西都给你。但别先选好一个人，再问我要证据。')],choices:[c('listen','拉过椅子：“从头跟我讲。”','signature','马修终于坐下。他把那杯冷咖啡推到一边，拿出了完整的检查清单。',{trust:2,transparency:1},['listened','evidence']),c('name','“先告诉我，是谁最后碰过它？”','signature','他把清单收回一半。“我能给你一个名字。但那不是原因。”',{trust:-2,transparency:-1},['pressure'])]},
-finance:{chapter:1,title:'纸背面的字',place:'财务办公室',time:'06:03',bg:2,lead:'三张表格的背面，有一张孩子的画。',lines:[l('victor','延期不是世界末日。没有计划才是。'),l('narrator','维克多把画翻回去，露出客户排班、仓库占用和本月付款的清单。'),l('you','如果必须停下来呢？'),l('victor','那就停。我只想知道，下一次什么时候能收到消息。我得让别人也有办法安排明天。')],choices:[c('cost','“帮我算算，怎样撑过这几天。”','signature','他拿起笔，在每一项支出旁写下可以再谈的人。“现在我们有事可做了。”',{cash:2,trust:1},['cost_plan']),c('promise_date','“先告诉他们，九点照常。”','signature','维克多没有立刻打电话。“这句话，我会当成你的承诺。”',{cash:1,safety:-2},['rush'])]},
-signature:{chapter:2,title:'签字笔停在半空',place:'交付协调室',time:'08:32',bg:2,lead:'客户的车已经到门口了。',lines:[l('narrator','Faury 把签字页转向你。隔着玻璃，能看见一辆车慢慢停下。'),l('faury','技术团队说，还有一项没查完。你昨晚拿到的信息，能解释它吗？'),l('victor','如果要改安排，我现在就去接客户。别让他们在门口干等。'),l('mathieu','我需要完整数据。还有一个不因为九点到了，就自动结束的检查。')],choices:[c('wait','合上签字页：“等他查完。”','customer','维克多拿起外套下楼了。马修第一次抬起头，认真看了你一眼。',{safety:3,transparency:1,cash:-2},['review']),c('schedule','把日程表推过去：“先往下安排。”','customer','交付准备继续。技术部门仍保留最后放行权，但他们手里的时间变得更紧了。',{cash:2,safety:-3},['rush'])]},
-customer:{chapter:2,title:'电话另一端也有明天',place:'机库外的玻璃会议室',time:'09:10',bg:2,lead:'她没有发火，只翻了一页日历。',lines:[l('client','我的机组明早出发。你们改一次日期，我就得重新安排很多人。'),l('you','抱歉。'),l('client','先不用道歉。告诉我，我今天等到的是消息，还是又一个猜测？'),l('narrator','维克多站在门口，等你决定这通电话怎么结束。')],choices:[c('honest','“四点我再打来，把查到的都告诉你。”','timeline','她停了一会儿。“好。四点，我等你。没有结果也要打。”',{trust:2,transparency:1,cash:-1},['customer_truth']),c('assure','“不会影响你们明天的安排。”','timeline','她开始通知机组。你忽然意识到，刚才那句话已经变成了别人的行程。',{cash:1,trust:-2,safety:-1},['rush'])]},
-timeline:{chapter:3,title:'一句话走过三张桌子',place:'质量资料室',time:'13:24',bg:0,lead:'你以为会找到一个被删掉的句子。',lines:[l('erin','原话在这里。“已经安排检查”。'),l('mathieu','第二份写的是“检查已安排，问题处理中”。'),l('erin','到了摘要，就只剩“已处理”了。没有证据证明是谁故意改的。'),l('you','每个人都以为，下一个人知道还没查完。'),l('narrator','房间安静下来。你终于找到了差异，却没找到一个足够简单的坏人。')],interaction:{type:'timeline',label:'顺着时间看一遍',title:'措辞的流转',body:'昨天 06:10 · 原始记录：已安排检查。\n昨天 07:05 · 部门汇总：检查已安排，问题处理中。\n昨天 07:40 · 正式摘要：已处理。\n\n还没有人写下“检查通过”。一个未完成的动作，变成了完成的结论。'},choices:[c('record','在空白处写下：“尚未完成。”','protection','艾琳把新的一页放进档案袋。这一次，没有人替未知的事情画上句号。',{transparency:2},['accountability']),c('quiet','把三张纸收进抽屉，先结束争论','protection','抽屉轻轻合上。记录还在，只是下一次会议不会看到它们。',{transparency:-3},['omit'])]},
-protection:{chapter:3,title:'名字写在哪一行',place:'员工休息室',time:'16:02',bg:3,lead:'艾琳站在门口，手里还拿着那只档案袋。',lines:[l('erin','报告交上去以后，大家会先问谁提出来的，对吗？'),l('narrator','你想说“不会”。话到嘴边，又停住了。你无法替所有人保证。'),l('claire','你可以写清楚：报告问题的人不会因此受罚。真正做错了什么，再按事实查。'),l('erin','我不需要你保证我永远没错。我只想下次还敢来敲门。')],choices:[c('protect','签下自己的名字，把规则和记录一起交上去','bonus','艾琳松开档案袋。克莱尔说：“留一份给我，我们一起盯着它落实。”',{trust:2,transparency:2},['protect']),c('blame','把最后经手人的名字圈出来','bonus','报告很快有了一个负责人。艾琳没有再问第二个问题。',{trust:-3,transparency:-2},['scapegoat']),c('hide','“先别交了，我不想把你卷进去。”','bonus','她点点头，把档案袋带走了。你保护了这一次的安静。',{transparency:-2},['omit'])]},
-bonus:{chapter:4,title:'那张没有奖金的表',place:'一个月后 · 办公室',time:'一个月后',bg:2,lead:'飞机后来完成了复核。可是那张表留下来了。',lines:[l('narrator','新的奖金表摆在桌上。按时交付的人有奖励，发现问题、让大家停下来的人，名字旁边却是空白。'),l('victor','大家每天看这些表，比听我们开会多。'),l('you','所以，我们嘴上说的和纸上奖励的，并不是一件事。'),l('faury','那就让纸上的东西，也经得起检查。')],choices:[c('change','把那张空白的停线记录，也放进考核材料','talent','表格被退回来两次，修改了三次。终于，发现问题和完成交付一起被记录下来。',{safety:2,transparency:1,cash:-1},['fair_rewards']),c('keep_bonus','先按旧表发放，等忙完再改','talent','奖金准时到账。那张空白的表，被压在了新一批交付计划下面。',{cash:1,transparency:-1},['speed_rewards'])]},
-talent:{chapter:4,title:'门边的纸箱',place:'维修工位',time:'18:40',bg:1,lead:'马修的桌上，比平时整齐。',lines:[l('narrator','常用的尺子已经装进纸箱。马修发现你在看，笑了一下。'),l('mathieu','不是因为那天。我只是……不想为了涨工资，去做一个不会修东西的经理。'),l('you','你还想留在工位上？'),l('mathieu','我喜欢这个。但我也想有机会往前走。别只给我换一个好听的头衔。')],choices:[c('career','把纸箱放回桌下：“我们把这条路写出来。”','lunch','他没有马上收起辞职信。“标准要公开，不能只给我一个人。”你答应把方案拿去评审。',{talent:3,trust:1,cash:-1},['technical']),c('raise','“先留下，我给你申请一次加薪。”','lunch','他把纸箱往里推了一点。辞职信仍夹在笔记本里。',{talent:1,trust:-1},['retention_patch']),c('let_go','替他把纸箱搬到门边','lunch','他和你握了握手。门关上后，工位上只剩下一张别人还看不懂的维修便笺。',{talent:-3,cash:1},['lost_expert'])]},
-lunch:{chapter:4,title:'食堂的餐巾纸',place:'工厂食堂',time:'19:12',bg:3,lead:'克莱尔把一张餐巾纸推到你的餐盘旁。',lines:[l('worker','这个工具，我们三个班轮着找。有人来参观，它总能准时出现。'),l('claire','他说了三次。这是第四次。'),l('narrator','你的手机同时亮起：楼上的晚餐在等你。餐巾纸上画着工具的样子，还有一个电话号码。'),l('you','你们今晚还要用？'),l('worker','明早也要。之后每一天都要。')],interaction:{type:'note',label:'展开餐巾纸',title:'一张不太正式的清单',body:'借工具，来回四十分钟。\n下班后的消息，分不清是不是真的紧急。\n上次提的问题，还不知道谁在处理。\n\n最下面留了一行空白：“下次谁回来告诉我们？”'},choices:[c('return','留下电话号码：“明天下午，我回来找你。”','lockdown','你取消了楼上的晚餐。第二天，工具的问题有了负责人；没解决的几项，也约好了下一次见面。',{trust:2,transparency:1,cash:-1},['followup']),c('photo','拍下照片，赶去楼上的晚餐','lockdown','你说“我记下了”。手机相册里，这张照片慢慢被新的照片推到了后面。',{trust:-1,cash:1},['unanswered'])]},
-lockdown:{chapter:5,title:'九个月以后，灯熄了一半',place:'2020 年 · 空下来的厂房',time:'2020',bg:4,lead:'之前，你担心交不出飞机。现在，几乎没人来接了。',history:'历史背景：2020 年 6 月，空客公开宣布计划调整约 15,000 个岗位，并与社会合作伙伴协商。下面的人物、具体方案和对白均为虚构。',lines:[l('narrator','疫情让航班大幅减少。你走过同一条走廊，这次连工具碰撞的声音都听不见。'),l('victor','钱正在变少，比我们原先想的快。'),l('claire','他们在问，下个月还有没有班可上。有人刚签了房贷。'),l('you','我知道。'),l('claire','那就别只说“我知道”。我们把办法摆出来。')],choices:[c('share','坐下来，一起算短工时和能申请的支持','negotiation','计算一直做到深夜。方案保留了关键技能，也写下必须承担的收入变化和岗位调整。没有一张轻松的表。',{talent:3,trust:2,cash:-2},['funded_plan']),c('cut','把准备好的裁员名单交出去','negotiation','现金压力开始减轻。第二天，厂门口有人抱着纸箱站了很久。',{cash:5,talent:-5,trust:-3},['cuts']),c('promise_jobs','站到大家面前：“一个人都不会走。”','negotiation','人群安静下来，有人流下眼泪。维克多没有鼓掌。他把还没填完的资金表放在你的椅子上。',{trust:3,cash:-5},['unfunded_promise'])]},
-negotiation:{chapter:5,title:'桌子另一边的椅子',place:'员工协商室',time:'次日 10:00',bg:2,lead:'克莱尔没有坐下。她先看了看门。',lines:[l('claire','我今天来，不只是听你宣布结果。'),l('victor','我们不能每件事都无限期讨论。'),l('claire','我也不需要无限期。我需要看到数字，知道谁承担什么，然后约好什么时候重新看。'),l('narrator','空椅子就在你旁边。你伸手，碰到了椅背。')],choices:[c('invite','拉开椅子，把预算摊到两人中间','before_board','克莱尔终于坐下。你们约定定期回来审视方案，管理层也承担明确的责任。',{trust:2,transparency:1},['shared_review']),c('announce','把已经决定的名单递给她','before_board','她接过名单，逐个读了一遍。“我会转告他们。但这不是我们一起作出的决定。”',{cash:1,trust:-2},['notice_only']),c('delegate','“你来决定吧，我尊重你们。”','before_board','她把笔放回你面前。“我可以一起承担。但你不能把你的那一份，也留给我。”',{cash:-3,trust:1},['abdicate'])]},
-before_board:{chapter:6,title:'会议开始以前',place:'董事会门外',time:'08:58',bg:5,lead:'有人来见你，也有人没有来。',lines:[l('narrator','你摸到外套里的旧纸页。最初那条语音，已经是很久以前的事了。')],interaction:{type:'letters',label:'看看门前留下的东西',title:'一路留下的回声',body:'这些东西，来自你之前做过的决定。'},next:'final',continue:'推开会议室的门'},
-final:{chapter:6,title:'最后一道红线',place:'董事会会议室',time:'09:00',bg:5,lead:'今天，没有人替你填写空白处。',lines:[l('victor','不管说什么，都记得把钱从哪里来，也写上。'),l('claire','还有那些要一起承担的人。'),l('faury','我只问最后一个问题。'),l('faury','如果明天你不在这里，他们还会把真话说出来吗？'),l('narrator','桌上有一支笔。你把它拿了起来。')],choices:[c('voices','打开记录，让愿意说话的人把话说完','END','你将风险、代价和每个人要做的事写在同一份方案里。',{},['final_open']),c('numbers','先展示恢复交付和省下的钱','END','大屏幕亮起，一条曲线缓缓向上。房间里响起了掌声。',{},['final_numbers']),c('unsigned','放下笔：“没查清的地方，我不能保证。”','END','你把未完成的事项留在桌面上，等待有人接下下一步。',{},['final_review'])]}
+brief:{chapter:0,title:'那架没离开机库的飞机',place:'图卢兹 · 2019 年',time:'07:20',bg:0,lead:'先听完这条语音。',history:'公开背景：Guillaume Faury 于 2019 年 4 月出任空客 CEO。本次交付、角色关系与对白为虚构。',lines:[l('narrator','我是刚到空客工厂的协调员。我的工作，是把人和他们需要的东西接到一起。今天，一架飞机的最后检查还没做完，客户却已经在门外等了。'),l('erin','最后一项复核没有完成。每个人都在问什么时候能走，还没有人问我们缺什么。'),l('faury','先去现场。把挡住他们的事情带回来，不用给我一个好听的答案。')],interaction:op('phone','接听艾琳的留言','机库传来的声音','艾琳：工具车旁边有张便笺。马修昨晚一直在等供应商的数据。\n客户九点到，你能先过来看看吗？\n\n你把外套搭在椅背上，重新拿起来。'),next:'walk',continue:'走进机库'},
+walk:{chapter:0,title:'三次走访的时间',place:'晨光里的维修机库',time:'08:00',bg:1,lead:'听得到的事，比汇报里多一点。',lines:[l('mathieu','别紧张，你不用会修飞机。帮我们找对需要支援的地方就行。'),l('narrator','客户到达前，你能走访三个地方。墙上的钟不会逼你读快一点；每次走访才推进故事。')],interaction:op('explore','走到工位之间','在机库里走一圈','点击一个地点，听那里的声音。共有四处，你有三次走访机会；没有现实倒计时。'),next:'dispatch',continue:'把发现带回调度桌'},
+dispatch:{chapter:0,title:'两支工程队',place:'机库调度桌',time:'08:45',bg:1,lead:'你不能同时答应所有人。',lines:[l('victor','我给你调来了两支支援队。你决定他们今天先去哪。'),l('erin','放行检查由技术团队负责。没有完成复核，飞机就不会交付。你能帮他们把路上的石头搬走。')],interaction:op('dispatch','把支援牌放到任务上','今天，先帮谁','点选两个任务，放下两枚支援牌。再次点击可以取回。确认以前，可以一直调整。'),next:'supplier',continue:'让大家出发'},
+supplier:{chapter:0,title:'电话接到了生产线上',place:'供应商联合工作间',time:'10:10',bg:2,lead:'背景里传来机器停下的声音。',lines:[l('mathieu','他们也被交期追着跑。我们带去的人，终于把两边的数据放到了同一张桌上。'),l('erin','这是未完成的检查清单。不是谁写一封催促邮件，它就会自动消失。'),l('client','我可以改安排。但你得告诉我，我等的是检查结果，还是另一个承诺？')],choices:[c('open','把未完成的清单发给客户，约好下一次回电','report','客户划掉了原定日期。“四点，我等你。还没查完也要告诉我。”',['honest']),c('date','先答应明天交付，再回头想办法','report','客户开始通知机组。马修在纸上圈住“明天”，没有说话。',['deadline'])]},
+waiting:{chapter:0,title:'空着的交付大厅',place:'客户休息区',time:'10:10',bg:2,lead:'咖啡已经续过两次。',lines:[l('client','我不是来找你吵架。我只想知道，要不要让机组回去。'),l('victor','供应商那边还缺完整数据。我们的支援人手去了别处，那里得再等一轮。'),l('you','我去打这通电话。')],choices:[c('open','坐到客户旁边，把尚未查完的事情讲清楚','report','她把行程表推过来。“你告诉我下一次什么时候有消息，我来改安排。”',['honest']),c('date','留下一个明天的日期，先让他们安心','report','她把日期写进手机。你看着她的屏幕，知道这句话已经很难收回。',['deadline'])]},
+report:{chapter:0,title:'报告上的名字',place:'质量资料室',time:'16:00',bg:0,lead:'问题进了门，人会不会被留在门外？',lines:[l('narrator','四点，你回了客户电话：复核还在继续。晚上，完整数据终于送到。飞机会在技术团队确认后，重新安排交付。'),l('erin','我还想把今天缺的数据和工具写进记录。可他们会先问，是谁让交付慢下来的。'),l('claire','问事实，和找一个人扛下来，是两件事。你准备把这页纸交给谁？')],choices:[c('protect','和艾琳一起署名，保留她的原始记录','canteen','她把笔递给你。报告写下事实，也写下复核负责人和回访日期。',['protected']),c('blame','圈出最后经手人的名字，让事情快点结束','canteen','报告很快被收走。艾琳把还想说的话咽了回去。',['blame']),c('quiet','先把记录锁进抽屉，避免新的争论','canteen','抽屉合上时没有多大声音。下一次会议也没有提起这页纸。',['silence'])]},
+canteen:{chapter:0,title:'晚饭还没凉',place:'几周后 · 工厂食堂',time:'19:12',bg:3,lead:'把答应过的事，变成明天真的会发生的事。',lines:[l('claire','今天别去楼上了。我们给你留了把椅子。'),l('mathieu','我不想为了往前走，就再也不碰工具。桌下的纸箱，是打算带走的。'),l('erin','我想下次看到不对劲的事情，还敢把门敲响。'),l('victor','这一轮，我们能推动两项改变。事情要有人做，不能只写在口号里。')],interaction:op('policy','展开餐巾纸上的请求','留下哪两件事','把两枚承诺牌放到你愿意推动的事情上。它们会改变疫情来临时谁愿意留下，以及复工时能调动多少人。'),next:'lockdown',continue:'把名字写在回访栏'},
+lockdown:{chapter:1,title:'灯一盏盏熄下去',place:'2020 年 · 空机库',time:'2020',bg:4,lead:'这一次，问题不在交付门口。',history:'公开背景：2020 年航空业受疫情冲击。空客于 6 月宣布拟调整约 15,000 个岗位，并与社会合作伙伴协商；“全部员工完全保留”并非本作采用的历史结论。',lines:[l('narrator','航班大幅减少，客户不断来信调整计划。同一个机库，忽然听得见自己的脚步。'),l('victor','订单变慢，工资和账单不会跟着停下。我们得撑过这段时间。'),l('claire','有人刚签了房贷。也有人说，只要知道下个月会怎样，少上几天班也能一起商量。')],interaction:op('budget','把应急筹码摆上白板','这一次，钱先放在哪里','你有 7 枚应急筹码。先选一种用工安排，再留出至少一项支持。筹码只是游戏资源，不对应真实金额或补贴比例。'),next:'shock',continue:'把方案带到下一封邮件前'},
+shock:{chapter:1,title:'原定到账的那一天',place:'临时协调办公室',time:'08:15',bg:2,lead:'邮件里只有一句：还需要补充材料。',lines:[l('victor','一笔原本预期的支持款延后了。账单却在今天到期。'),l('claire','我们昨天才告诉大家接下来怎么办。你要改哪一部分，得亲口跟他们讲。')],choices:[c('reserve','拆开预留的信封，先把今天撑过去','union','维克多把到期账单一张张移开。“预备的钱，今天有了名字。”',['bridged'],'reserve'),c('credit','拿出当初收好的账册，争取一笔短期借款','union','资料完整，短期借款终于有了谈判基础。代价是一笔需要在恢复后偿还的债务。',['bridged','debt'],'ledger'),c('parts','请供应商把一笔付款往后挪','union','今天的账单过了关。供应商答应等待，也暂缓了原计划为你预留的配件。',['parts_delayed']),c('cut','缩减原方案中的保留岗位','union','现金压力减轻。克莱尔拿着修订后的名单，久久没有坐下。',['emergency_cuts'])]},
+union:{chapter:1,title:'再拉过一把椅子',place:'员工协商室',time:'10:30',bg:2,lead:'人们要知道自己答应的是什么。',lines:[l('claire','我可以跟大家一起面对困难。但我不能拿一句“相信我们”，替他们决定接下来几个月。'),l('victor','把钱从哪里来、哪些事暂时做不到，都写下来。'),l('you','我们就从这张桌子开始。')],choices:[c('share','摊开预算，约好一起回来复审的日期','return','克莱尔坐下来，把一张空白的回访表推到中间。“这次，我和你一起回去说。”',['shared']),c('promise','先向大家保证，每个人都会像以前一样','return','有人松了一口气。克莱尔看着纸上已经改变的工时和岗位，没有跟着鼓掌。',['overpromise']),c('announce','把定好的方案念完，先执行再说','return','会议很快结束。你站在门口，听见走廊里还有很多没问出来的问题。',['announced'])]},
+return:{chapter:2,title:'有人把灯打开了',place:'复苏阶段 · 同一座机库',time:'第 1 天',bg:1,lead:'过去留下的东西，现在都回来了。',lines:[l('narrator','新的订单终于来了。试生产安排给了你三天：三架飞机，几支能回来的人手，还有并不充足的配件。'),l('erin','独立复核，就是让另一组人再检查一遍。每架飞机装好后都要过这一关；没检查完，就不能交付。')],interaction:op('letters','看看工位上留下了什么','他们有没有回来','这些消息，来自你前面做过的事。'),next:'restart',continue:'走到复工调度板前'},
+restart:{chapter:2,title:'让生产线重新动起来',place:'复工调度台',time:'三天',bg:1,lead:'把一件件做完的事，接到下一件事上。',lines:[l('mathieu','先有配件，再装配，下一天才能独立复核。别急，我们一步一步来。'),l('victor','三天后客户会来。能交几架，就如实交几架；没做完的，给出新的安排。')],interaction:op('restart','安排今天的工位','三天的复工调度','点任务，把它放进今天的班次，再点“执行这一天”。采购的配件和完成装配的飞机，到下一天才可用于下一步。没有现实倒计时。'),next:'final',continue:'去见等在门口的人'},
+final:{chapter:2,title:'把机库的门打开',place:'董事会与交付区',time:'后来',bg:5,lead:'你带进来的，不只有一个数字。',lines:[l('faury','你现在已经知道，把人留在地面上照顾好，有多难。'),l('claire','我们做到了哪些，还有哪些没兑现，都该让大家听见。'),l('victor','你用过的每一枚筹码，每一个借来的明天，都还在这张桌上。')],choices:[c('people','让现场的人把做完和没做完的事讲清楚','END','你打开记录。交付数字、待办事项和下次复审的日期，被放在同一页上。',['final_people']),c('numbers','先展示交付数字，留下最漂亮的一页','END','掌声响起来。有些人低头看着那几行没有上屏幕的文字。',['final_numbers']),c('continue','把未完成的清单留给下一班，约好回来','END','会议结束后，你又走回机库。还有几把椅子没有摆好，还有人等着你回来。',['final_continue'])]}
 };
+export const places=[
+ {id:'engine',label:'发动机旁的马修',x:21,y:34,title:'还缺一份数据',text:'“供应商给的是摘要。把两边工程师放到一张桌子上，我们才能核对。”你记下了对方工程师的直拨电话。',flag:'engine_note'},
+ {id:'tools',label:'空了一格的工具车',x:66,y:61,title:'被借走的工具',text:'三个班组共用一套工具。夜班为找它多走了四十分钟。那张延期记录上，没有写下这四十分钟。',flag:'tool_note'},
+ {id:'locker',label:'休息区的纸箱',x:75,y:24,title:'还没寄出的辞职信',text:'马修想继续做技术，却看不到升迁的路。纸箱里放的不是纪念品，而是每天要用的尺子。',flag:'career_note'},
+ {id:'ledger',label:'维克多留下的账册',x:32,y:75,title:'每一笔要到期的钱',text:'账册附有应收款与备用融资的联系人。“留着，哪天钱晚到，我们还有东西能拿去谈。”',flag:'ledger'}
+];
+export const dispatchTasks=[
+ {id:'field',label:'到供应商现场一起复核',detail:'供应商就是给工厂供零件的公司。帮双方补齐数据，也维护以后的配件安排。',flag:'supplier_help'},
+ {id:'tools',label:'把工具和轮班补位送到工位',detail:'今天少一点无谓等待；留下能带新人的老员工。',flag:'tools_fixed'},
+ {id:'customer',label:'陪客户重新安排机组',detail:'有人负责解释、回电和改签；减少一段被浪费的行程。',flag:'customer_help'},
+ {id:'trace',label:'整理原始数据与交接记录',detail:'让后续复核有据可查；给愿意报告问题的人撑腰。',flag:'traceable'}
+];
+export const policies=[
+ {id:'technical',label:'让技术人员继续做技术也能成长',detail:'公开技术晋升路径。马修会留下，也愿意带新人。',flag:'technical'},
+ {id:'voice',label:'保护报告者，把复核结果带回现场',detail:'建立保密反馈和回访。愿意开口的人会回来。',flag:'voice'},
+ {id:'rest',label:'补齐工具，保障轮班休息',detail:'把食堂里的清单落实。保住一支熟悉工位的班组。',flag:'rest'},
+ {id:'reward',label:'把发现问题也记进奖励',detail:'不只奖励交付速度。让班组愿意为长期质量花时间。',flag:'balanced'}
+];
+for(const place of places)place.text=asMe(place.text);
+export const budgetItems=[
+ {id:'workshare',label:'协商短工时，保留核心班组',cost:3,detail:'工作时间与收入需要共同调整。保留两支基础班组。',group:'employment'},
+ {id:'cuts',label:'缩减岗位，压低固定支出',cost:1,detail:'眼前能多留些筹码；复工时基础班组减少到一支。',group:'employment'},
+ {id:'mentor',label:'带薪保留培训与师徒时间',cost:2,detail:'如果马修留下，会多培养出一支能独立工作的新班组。'},
+ {id:'supplier',label:'维护供应商的配件安排',cost:2,detail:'复工时多一份可用配件，不等于绕过质量检查。'},
+ {id:'reserve',label:'预留一笔不动的钱',cost:2,detail:'暂时帮不到眼前的工位，但能应对下一次付款变化。'},
+ {id:'support',label:'提供沟通与员工支持',cost:1,detail:'让遇到困难的人找得到联系人，修复协商中的信任。'}
+];
 export const endings={
-successor:{name:'接班人',en:'THE SUCCESSOR',chapter:'尾声 · 你没有参加的会议',bg:5,quote:'那天，你没有接到电话。',paras:['新的异常出现在早班。艾琳把原始记录发给所有相关的人，工程师提出复核范围，维克多开始准备成本预案。','克莱尔把一把椅子拉到桌边。有人提出异议，有人说“我还不知道”。没有人急着把那句话改成“已处理”。','你经过玻璃门，停了一会儿，又继续向前走。他们知道该怎么做。'],last:'最初那条语音，终于不再需要只打给一个人。'},
-normal:{name:'一切正常',en:'ALL CLEAR',chapter:'尾声 · 整齐的文件',bg:0,quote:'后来，你再也没在凌晨接到电话。',paras:['摘要每天准时到达。每一栏都填得整整齐齐，每个问题都被标记为已处理。','你问为什么异常变少了，没有人回答。质量档案室的抽屉里，还有几份没被带进会议的原始记录。','手机安静地躺在桌上。你已经分不清，这究竟是不是好消息。'],last:'没有声音，不代表没有事情发生。'},
-nobody:{name:'没有人负责',en:'PASS IT ON',chapter:'尾声 · 往返的文件夹',bg:2,quote:'文件走过了所有人的桌子。',paras:['工程部门说自己已经提醒过，财务说技术判断不归他们负责。每个部门都找到了一张能证明自己的纸。','克莱尔问下一步谁来做。会议又延长了半个小时。','你看着签名栏。它仍然是空白。'],last:'有了很多解释，却没有人走出会议室去解决问题。'},
-survivors:{name:'幸存者名单',en:'THOSE WHO REMAIN',chapter:'尾声 · 灯重新亮起来',bg:1,quote:'订单回来了，那张工位却还空着。',paras:['公司度过了最困难的日子。现金终于不再以同样的速度减少。','一个新来的工程师举着维修便笺，问以前是谁负责这个环节。大家指向同一个空工位。','你翻开联系人，发现有些号码已经很久没拨过了。'],last:'名单上少掉的名字，不会自动长回生产线上。'},
-factory:{name:'被保护的工厂',en:'A PROMISE TOO LARGE',chapter:'尾声 · 第二次宣布',bg:4,quote:'他们记得你第一次站在台上的样子。',paras:['你保住了许多人的希望，却没找到足够的钱兑现所有承诺。成本表上的空白，一直没有填完。','更严格的重组方案被送来。克莱尔陪你走到厂门口，这次她没有替你说话。','你知道有人仍然感激你。你也知道，感激不能支付下个月的工资。'],last:'那句最动听的保证，最终变成了最难解释的一句。'},
-quarter:{name:'季度冠军',en:'A GOOD QUARTER',chapter:'尾声 · 掌声之后',bg:2,quote:'你的照片出现在本季度的简报里。',paras:['交付和成本数字都很好看。有人握住你的手，说你让公司重新动了起来。','回到办公室，你看见一封告别邮件。一位工程师离开了，邮件写得很客气。','楼下照常忙碌。只是最近，再没人拉住你，说“我还有一件事”。'],last:'你得到了一个漂亮的季度。之后的事，还没有人写出来。'},
-redline:{name:'红线之上',en:'ABOVE THE LINE',chapter:'尾声 · 又一次敲门',bg:5,quote:'门外的人，先问会不会耽误你。',paras:['那次交付最终晚了一些。公司付出了代价，有些承诺还需要继续兑现。','新来的员工把一张记录放在桌上。你没有问“为什么现在才说”，而是把旁边的椅子拉了出来。','“坐。先告诉我，你看到了什么。”'],last:'你没能让所有事情变好。但这一次，问题进了门。'}
+relay:{name:'接力的人',en:'THE RELAY',bg:5,chapter:'尾声 · 下一班',quote:'你离开时，灯还亮着。',paras:['三架飞机按计划完成了复核。机库里没有庆功标语，只有下一班已经接过来的工作表。','马修身边站着新来的工程师。艾琳把一条新的疑问放到桌上，没有先问“这样说会不会不好”。','你曾经搬来的一把椅子，已经不再属于某一个人。人们知道下一次该去找谁，也知道可以说“还没做完”。'],last:'真正留下来的，是一群能继续把事情做下去的人。'},
+steady:{name:'稳稳起飞',en:'A STEADY RETURN',bg:1,chapter:'尾声 · 重新排好的日历',quote:'没有奇迹，只有一班又一班。',paras:['有人改过行程，有人少拿过收入。你把能交付的飞机交出去，把未完成的事项放进下一次安排。','克莱尔的回访表上仍有空白，但她知道这些问题会再回到桌面。','航班重新变得密集。那座工厂没有在一夜之间恢复，却在一次次回电和复核里站稳了。'],last:'日历终于可以往后翻。'},
+hollow:{name:'空出来的工位',en:'EMPTY STATIONS',bg:4,chapter:'尾声 · 一张旧便笺',quote:'订单回来了，熟悉那道工序的人没有。',paras:['缩减支出帮助工厂熬过了最困难的一段时间。现在，新的订单排到门外。','一名新人举着维修便笺，问以前是谁负责这个环节。大家看向同一张空桌子。','你开始重新招聘，也开始重新等待。纸上的人数可以加回来，经验却需要重新长出来。'],last:'有些支出省在昨天，代价留给了明天。'},
+pledge:{name:'太重的承诺',en:'THE WEIGHT OF A PROMISE',bg:3,chapter:'尾声 · 第二次宣布',quote:'他们还记得你第一次站到台前的样子。',paras:['你说过生活不会改变。后来，工时、收入或岗位真的变了。','克莱尔陪你回到食堂。这次她没有替你说话。你必须自己解释那些本该提前说清楚的代价。','方案还能重新谈，信任也许能慢慢修复。但下一次，人们会先等你把整句话说完。'],last:'希望不能替代一张能兑现的安排表。'},
+silent:{name:'没有来电的夜晚',en:'THE QUIET LINE',bg:0,chapter:'尾声 · 静音',quote:'后来，电话真的很少响了。',paras:['汇报越来越简洁，交付表越来越整齐。没有多少人再问那些让会议延长的问题。','艾琳仍然保存着原始记录。只是她再也没有在凌晨给你发过语音。','你站在亮着灯的办公室里，忽然不知道，这样的安静是不是自己想要的。'],last:'没有人说话，不等于没有事情发生。'},
+quarter:{name:'漂亮的季度',en:'A BEAUTIFUL QUARTER',bg:2,chapter:'尾声 · 屏幕上的曲线',quote:'那一页简报，做得很好看。',paras:['你把完成的交付放在最显眼的地方。几项尚未兑现的安排，被留到了附件里。','会后有人握住你的手，也有人直接回到了工位。两种脚步声走向不同的方向。','这个季度有了一个清晰的故事。下一个季度，要面对的仍是那些没有完成的事情。'],last:'被省略的部分，还在等一个回访日期。'},
+unfinished:{name:'还没写完的清单',en:'WORK IN PROGRESS',bg:1,chapter:'尾声 · 灯下的第二页',quote:'这次，你没有替空白处写上“完成”。',paras:['配件、人手和时间没能一起到位。部分交付需要重新安排，客户也需要一个诚实的解释。','你走回调度台，把没完成的任务移到下一班。有人叹气，也有人拉了把椅子坐下来。','故事没有把所有事情解决。但那张清单还在桌上，没有被藏进抽屉。'],last:'下一次行动，可以从这里开始。'}
 };
-export function initial(){return {version:4,node:'phone',line:0,phase:'dialogue',choice:null,history:[],seen:[],journal:[],metrics:{safety:50,trust:50,cash:50,talent:50,transparency:50},flags:[]}}
-export function choose(state,id){const node=scenes[state.node];const choice=node?.choices?.find(c=>c.id===id);if(!choice)throw Error('Unknown choice');const s=structuredClone(state);s.choice=id;s.phase='response';s.history.push({node:state.node,id,label:choice.label});for(const [k,v]of Object.entries(choice.delta))s.metrics[k]=Math.max(0,Math.min(100,s.metrics[k]+v));s.flags.push(...choice.flags);return s}
-export function move(state){const node=scenes[state.node];const next=node.choices?node.choices.find(c=>c.id===state.choice)?.next:node.next;if(!next)throw Error('No next scene');return {...state,node:next,line:0,phase:'dialogue',choice:null}}
-export function endingFor(s){const f=s.flags,has=x=>f.includes(x),m=s.metrics;const foundations=['review','protect','fair_rewards','technical','followup','shared_review'].filter(has).length;
- if(has('evidence')&&has('protect')&&has('technical')&&has('funded_plan')&&has('shared_review')&&foundations>=5&&m.safety>=54&&m.trust>=59&&m.transparency>=58&&m.cash>=38&&!has('final_numbers'))return 'successor';
- if(f.filter(x=>x==='omit').length>=3&&m.transparency<=44)return 'normal';
- if((has('scapegoat')&&!has('accountability'))||(has('abdicate')&&has('final_review')&&!has('accountability')))return 'nobody';
- if(has('cuts')&&m.talent<=48&&!has('technical'))return 'survivors';
- if(has('unfunded_promise')&&!has('cost_plan')&&m.cash<=42)return 'factory';
- if((f.filter(x=>x==='rush').length>=2&&!has('protect'))||(has('final_numbers')&&!has('fair_rewards')))return 'quarter';
- return 'redline';}
-export function linesFor(s){const lines=scenes[s.node].lines.map(x=>({...x}));const has=x=>s.flags.includes(x);
- if(s.node==='signature')lines.splice(1,0,l('you',has('evidence')?'我带来了原始记录。它和摘要不是同一个意思。':'我手里只有摘要。原始记录，我还没有拿到。'));
- if(s.node==='timeline')lines.unshift(l('narrator',has('customer_truth')?'下午四点之前，你答应过要回那个电话。艾琳把三份记录摊到了灯下。':'客户已经按你说的日期安排了机组。艾琳看着你，把三份记录摊到了灯下。'));
- if(s.node==='protection')lines.unshift(l('narrator',has('customer_truth')?'四点，你准时打了那通电话，说明复核还没有结束。她说：“谢谢你至少没有消失。”':'四点，技术部门告知复核仍未结束。你拨通客户的电话，收回了早上的承诺。她沉默了一会儿：“机组已经安排好了。你知道现在要重新通知多少人吗？”'));
- if(s.node==='lunch')lines.unshift(l('claire',has('protect')?'艾琳说，你把自己的名字也签在了报告上。今晚坐我们这桌吧。':'艾琳最近很少来这里吃饭。她说，想找个安静一点的地方。'));
- if(s.node==='before_board'){
-  lines.push(l('narrator',has('technical')?'马修把那张辞职信折成纸飞机，放在窗台。他说，今天带的是检查清单。':has('lost_expert')?'马修没有来。原来的工位旁，多了一张待招聘的便笺。':'马修仍在，但他把那个纸箱留在桌下。'));
-  lines.push(l('erin',has('protect')?'我把完整记录带来了。你不用替我说，我自己来。':'我的原始记录还在。只是有些话，我还没想好能不能在里面说。'));
-  lines.push(l('claire',has('shared_review')?'我们的预算和复审安排都带来了。我和你一起进去。':'我会听你说完。之后，我也有话要讲。'));
- }
- if(s.node==='final'&&has('lost_expert'))lines.unshift(l('narrator','你在通讯录里滑过马修的名字，没有拨出去。'));
- return lines;}
-export function lettersFor(s){const h=x=>s.flags.includes(x);return [h('evidence')?'那两份最早的记录，纸角已经磨软。':'你最初拿走的摘要，章依然很清楚。',h('protect')?'艾琳的短信：我到了。在门口等你。':'艾琳的短信：材料发给你了。',h('followup')?'一张新的工具清单，下面写着：这次真的有人回来。':'手机相册里，那张餐巾纸还没有删。',h('technical')?'马修留下的纸飞机，折痕上压着完整检查清单。':h('lost_expert')?'一封来自马修的告别邮件。':'马修的便笺：我还在等那条技术成长的路。'];}
-export function validSave(s) {
- try {
-  if(!s || s.version!==4 || !Array.isArray(s.history) || s.history.length>20 || !Array.isArray(s.seen) || !Array.isArray(s.journal) || !['dialogue','action','response'].includes(s.phase)) return false;
-  let r=initial(),i=0;
-  const visited=new Set(['phone']);
-  for(let guard=0;guard<35;guard++) {
-   if(r.node===s.node && i===s.history.length) break;
-   const n=scenes[r.node];
-   if(!n) return false;
-   if(n.choices) {
-    const e=s.history[i++],choice=n.choices.find(c=>c.id===e?.id);
-    if(!e || e.node!==r.node || !choice || e.label!==choice.label) return false;
-    r=choose(r,e.id);
-    if(r.node===s.node && i===s.history.length) break;
-   }
-   r=move(r); visited.add(r.node);
-  }
-  if(r.node!==s.node || i!==s.history.length) return false;
-  if(JSON.stringify(r.metrics)!==JSON.stringify(s.metrics) || JSON.stringify(r.flags)!==JSON.stringify(s.flags)) return false;
-  if(new Set(s.seen).size!==s.seen.length || s.journal.length!==s.seen.length) return false;
-  if(s.seen.some(id=>!visited.has(id)||!scenes[id]?.interaction)) return false;
-  if(s.journal.some((j,i)=>j.node!==s.seen[i]||j.title!==scenes[j.node].interaction.title)) return false;
-  if(s.node==='END') return s.phase==='dialogue' && s.line===0 && s.choice===null;
-  if(!Number.isInteger(s.line) || s.line<0 || s.line>=linesFor(r).length) return false;
-  if(s.phase==='response') return r.phase==='response' && s.choice===r.choice;
-  if(r.phase==='response' || s.choice!==null) return false;
-  if(s.phase==='action' && !scenes[s.node].choices) return false;
-  return true;
- } catch {return false}
+export function initial(){return {version:5,node:'brief',line:0,phase:'dialogue',choice:null,history:[],seen:[],journal:[],flags:[],ops:{},events:[]}}
+const clone=s=>structuredClone(s);
+const addFlags=(s,...flags)=>{for(const f of flags)if(!s.flags.includes(f))s.flags.push(f)};
+export function operationData(s){return s.ops[s.node]||{}}
+export function budgetCost(ids){return ids.reduce((sum,id)=>sum+(budgetItems.find(x=>x.id===id)?.cost||0),0)}
+export function crewCount(s){let n=s.flags.includes('workshare')?2:1;if(s.flags.includes('emergency_cuts'))n=1;if(s.flags.includes('technical')&&s.flags.includes('mentor'))n++;if(n<2&&(s.flags.includes('rest')||s.flags.includes('tools_fixed')))n++;return Math.min(3,n)}
+export function initialShift(s){return {day:0,parts:s.flags.includes('parts_delayed')?1:1+Number(s.flags.includes('supplier_help')||s.flags.includes('supplier')),planes:[0,0,0],plan:[],log:[],crews:crewCount(s)}}
+export function shiftData(s){return s.ops.restart||initialShift(s)}
+export function jobsFor(s){const d=shiftData(s);return [{id:'supply',label:'采购一份配件',detail:'明天到货。',kind:'supply'},...d.planes.map((stage,i)=>({id:(stage===0?'build':'check')+i,label:(stage===0?'装配':stage===1?'独立复核':'已完成复核')+' '+['曙光号','信风号','远航号'][i],detail:stage===0?'使用一份现有配件；下一天可复核。':stage===1?'复核完成即可交付。':'已经可以交付。',kind:stage===0?'build':stage===1?'check':'done'}))]}
+export function operationReady(s){const type=scenes[s.node]?.interaction?.type,d=operationData(s);if(type==='explore')return (d.visited||[]).length===3;if(type==='dispatch'||type==='policy')return (d.selected||[]).length===2;if(type==='budget'){const a=d.selected||[];return a.length>=2&&a.filter(x=>['workshare','cuts'].includes(x)).length===1&&budgetCost(a)<=7}if(type==='restart'){const a=shiftData(s);return a.day>=3||a.planes.every(x=>x===2)}return true}
+export function operate(state,action,value,record=true){const s=clone(state),type=scenes[s.node]?.interaction?.type;if(s.seen.includes(s.node))throw Error('这一段行动已经完成');let d=s.ops[s.node]||{};
+ if(type==='explore'&&action==='visit'){const p=places.find(p=>p.id===value);if(!p)throw Error('这里没有这个地点');d.visited||=[];if(d.visited.includes(value))throw Error('已经来过这里了');if(d.visited.length>=3)throw Error('客户已经到场，该回调度桌了');d.visited.push(value)}
+ else if(['dispatch','policy','budget'].includes(type)&&action==='toggle'){const items=type==='dispatch'?dispatchTasks:type==='policy'?policies:budgetItems;if(!items.some(p=>p.id===value))throw Error('没有这项安排');d.selected||=[];if(d.selected.includes(value))d.selected=d.selected.filter(x=>x!==value);else{let ids=[...d.selected,value];if(type==='budget'){if(['workshare','cuts'].includes(value))ids=ids.filter(x=>!['workshare','cuts'].includes(x)||x===value);if(budgetCost(ids)>7)throw Error('筹码不够，先取回一项安排再试试')}else if(ids.length>2)throw Error('两枚牌都用完了。先点一张已放好的牌，把它取回。');d.selected=ids}}
+ else if(type==='restart'){d=s.ops.restart||initialShift(s);if(d.day>=3||d.planes.every(x=>x===2))throw Error('这轮调度已经结束');if(action==='job'){const job=jobsFor(s).find(j=>j.id===value);if(!job||job.kind==='done')throw Error('这项工作已经完成');if(d.plan.includes(value))d.plan=d.plan.filter(x=>x!==value);else{if(d.plan.length>=d.crews)throw Error('今天的人手已经排满，先取回一项任务');if(job.kind==='build'&&d.plan.filter(x=>x.startsWith('build')).length>=d.parts)throw Error('现有配件不足。采购的配件下一天到货。');d.plan.push(value)}}else if(action==='day'){if(!d.plan.length)throw Error('先给今天安排一项任务');const today=[...d.plan];for(const id of today){if(id==='supply')d.parts++;else if(id.startsWith('build')){d.parts--;d.planes[Number(id.slice(5))]=1}else d.planes[Number(id.slice(5))]=2}d.log.push({day:d.day+1,tasks:today});d.day++;d.plan=[]}else throw Error('不能这样操作调度板')}
+ else throw Error('此处没有这项操作');s.ops[s.node]=d;if(record)s.events.push({t:'operate',node:s.node,action,value:value??null});return s}
+export function confirmOperation(state,record=true){if(!scenes[state.node]?.interaction||!operationReady(state)||state.seen.includes(state.node))throw Error('先完成眼前的行动');const s=clone(state),type=scenes[s.node].interaction.type,d=operationData(s);if(type==='explore')for(const id of d.visited)addFlags(s,places.find(p=>p.id===id).flag);if(type==='dispatch'||type==='policy')for(const id of d.selected)addFlags(s,(type==='dispatch'?dispatchTasks:policies).find(p=>p.id===id).flag);if(type==='budget')addFlags(s,...d.selected);s.seen.push(s.node);s.journal.push({node:s.node,title:scenes[s.node].interaction.title});if(record)s.events.push({t:'inspect',node:s.node});return s}
+export function choiceEnabled(s,c){return !c.requires||s.flags.includes(c.requires)}
+export function choose(state,id,record=true){const n=scenes[state.node],c=n?.choices?.find(c=>c.id===id);if(state.choice!==null||!c||!choiceEnabled(state,c))throw Error('这条路还没有准备好');const s=clone(state);s.choice=id;s.phase='response';s.history.push({node:s.node,id,label:c.label});addFlags(s,...c.flags);if(record)s.events.push({t:'choose',node:s.node,id});return s}
+export function move(state,record=true){const n=scenes[state.node];if(!n)throw Error('故事已经结束');let next;if(n.choices){const c=n.choices.find(c=>c.id===state.choice);if(!c)throw Error('先决定下一步');next=c.next}else{if(n.interaction&&!state.seen.includes(state.node))throw Error('先完成眼前的行动');next=n.next}if(state.node==='dispatch')next=state.flags.includes('supplier_help')?'supplier':'waiting';const s={...clone(state),node:next,line:0,phase:'dialogue',choice:null};if(record)s.events.push({t:'move',node:state.node});return s}
+for(const ending of Object.values(endings)){ending.quote=asMe(ending.quote);ending.paras=ending.paras.map(asMe);ending.last=asMe(ending.last)}
+export function endingFor(s){const has=f=>s.flags.includes(f),delivered=shiftData(s).planes.filter(x=>x===2).length;
+ if((has('silence')||has('blame'))&&!has('voice'))return 'silent';
+ if(has('overpromise'))return 'pledge';
+ if((has('cuts')||has('emergency_cuts'))&&!has('technical'))return 'hollow';
+ if(has('final_numbers')&&!has('balanced'))return 'quarter';
+ if(delivered===3&&has('protected')&&has('technical')&&has('mentor')&&has('workshare')&&has('shared')&&(has('voice')||has('balanced'))&&has('bridged')&&!has('final_numbers')&&!has('emergency_cuts'))return 'relay';
+ if(delivered>=2&&has('shared')&&(has('protected')||has('voice')))return 'steady';
+ return 'unfinished';}
+export function lettersFor(s){const h=f=>s.flags.includes(f);return [h('technical')?'马修把纸箱搬回工位。他说：“这次，新人的座位也留好了。”':'马修的纸箱已经带走。原来的位置上，贴着重新招聘的便笺。',h('protected')||h('voice')?'艾琳的留言：我把尚未完成的复核列出来了，我们一起看。':'艾琳把材料放在门口，没有留下第二条语音。',h('tools_fixed')||h('rest')?'工具车终于有了固定位置。有人在把手上贴了张“谢谢”。':'那张工具清单还夹在工作簿里。熟悉工位的人还在轮班等待。',h('shared')?'克莱尔带着上次的预算回来：“我们说好，一起回来看看。”':'克莱尔发来了一份问题清单。今天，还需要给出一些回答。']}
+export function linesFor(s){const n=scenes[s.node],a=n.lines.map(x=>({...x})),h=f=>s.flags.includes(f);
+ if(s.node==='dispatch'&&h('engine_note'))a.push(l('you','我拿到了供应商工程师的直拨电话。他们也在等我们。'));
+ if(s.node==='report'&&h('deadline'))a[0]=l('narrator','四点，你不得不收回“明天交付”的保证。客户问为什么早上不把未知的事情说清楚。当天夜里完整数据才到，放行仍需技术团队复核。');
+ if(s.node==='canteen')a.unshift(l('claire',h('tools_fixed')?'工具已经到了，他们让我跟你说声谢谢。今晚坐下来吧。':'那张工具清单还没解决。有人说，你来吃饭时，想再问问。'));
+ if(s.node==='shock')a.push(l('victor',h('reserve')?'还好，白板上那笔没动的钱还在。':h('ledger')?'你第一天带走的账册还在吗？备用融资联系人，也许现在用得上。':'我们没有留出缓冲，也缺融资材料。得和供应商或者员工重新谈安排。'));
+ if(s.node==='return'){a.splice(1,0,l('narrator',lettersFor(s)[0]));a.push(l('victor',`这次能调动 ${crewCount(s)} 支班组。先做最需要的事，我们只有三个工作日。`))}
+ if(s.node==='restart'&&!h('technical'))a[0]=l('erin','马修已经离开了。我们按他留下的清单来：先备料，再装配，下一天独立复核。');
+ if(s.node==='final'){const count=shiftData(s).planes.filter(x=>x===2).length;a.unshift(l('narrator',`${count} 架飞机完成了独立复核。${count<3?'剩下的交付，需要重新安排。':'客户的机组正在走进机库。'}`));if(h('debt'))a.push(l('victor','那笔过桥融资要慢慢还。至少，今天我们能把这件事说清楚。'))}
+ return a;}
+export function operationSummary(s,node=s.node){const d=s.ops[node]||{},type=scenes[node]?.interaction?.type;if(type==='explore')return (d.visited||[]).map(id=>places.find(x=>x.id===id).title).join(' / ');if(['dispatch','policy','budget'].includes(type)){const list=type==='dispatch'?dispatchTasks:type==='policy'?policies:budgetItems;return (d.selected||[]).map(id=>list.find(x=>x.id===id).label).join(' / ')}if(type==='restart'){const a=shiftData(s);return `${a.day} 个工作日，${a.planes.filter(x=>x===2).length} 架飞机完成复核。`}if(type==='letters')return lettersFor(s).join('\n');return scenes[node]?.interaction?.body||''}
+export function validSave(s){try{if(!s||s.version!==5||!Array.isArray(s.events)||s.events.length>300||!['dialogue','action','response'].includes(s.phase))return false;let r=initial();for(const e of s.events){if(e.node!==r.node)return false;if(e.t==='operate')r=operate(r,e.action,e.value,false);else if(e.t==='inspect')r=confirmOperation(r,false);else if(e.t==='choose')r=choose(r,e.id,false);else if(e.t==='move')r=move(r,false);else return false}for(const k of ['node','choice','history','seen','journal','flags','ops'])if(JSON.stringify(r[k])!==JSON.stringify(s[k]))return false;if(s.node==='END')return s.phase==='dialogue'&&s.line===0;if(!Number.isInteger(s.line)||s.line<0||s.line>=linesFor(r).length)return false;if(s.phase==='response')return r.phase==='response';if(r.phase==='response')return false;if(s.phase==='action'&&!scenes[s.node].choices)return false;return true}catch{return false}}
+
+export const backgrounds={
+ brief:{when:'2019 · 交付受阻',story:'空客是一家制造客机的公司。福里刚接任负责人，行业更加关注飞行安全。我是协调员，要帮助工程师完成检查，也给等在门口的客户一个交代。',goal:'先到现场找出大家缺什么。',next:'点开语音，然后走进机库。'},
+ lockdown:{when:'2020 · 疫情让航班减少',story:'飞机需求突然减少。工厂收入变少，员工却还有房贷和生活。我得和同事一起安排有限的钱，争取让熟悉工作的人留下。',goal:'用 7 枚筹码安排接下来的日子。',next:'先选择怎样安排员工，再点选支持项目。'},
+ return:{when:'复苏阶段 · 订单回来了',story:'客户开始回来，但人手和配件不会自动回来。我之前留下的人、兑现的承诺，会变成现在能用的力量。',goal:'三天内，尽可能让三架飞机完成检查。',next:'点任务，再执行一天；检查没做完就不交付。'}
+};
+export function scoreFor(s){const h=f=>s.flags.includes(f),count=shiftData(s).planes.filter(x=>x===2).length;
+ const rows=[
+ {title:'让问题被听见',points:h('protected')?20:h('voice')?10:0,max:20,note:h('protected')?'我和艾琳一起保留了原始记录。':'报告者需要更明确的保护。'},
+ {title:'让熟手留下，带出新人',points:h('technical')&&h('mentor')&&h('workshare')&&!h('emergency_cuts')?20:h('technical')||h('rest')?10:0,max:20,note:h('technical')&&h('mentor')?'技术成长与培训一起落地。':'留下经验，需要职业空间和培训时间。'},
+ {title:'让承担代价的人参与',points:h('shared')?15:0,max:15,note:h('shared')?'我和员工约定了共同复审的日期。':'需要让员工参与，而不只是听宣布。'},
+ {title:'让承诺有钱兑现',points:h('bridged')?15:0,max:15,note:h('bridged')?'预备金或完整融资材料撑过了到账延迟。':'临时转移代价，削弱了原来的安排。'},
+ {title:'完成安全交付',points:[0,7,14,20][count],max:20,note:`${count} 架飞机走完了装配与独立复核。`},
+ {title:'把好的做法留给下一班',points:(h('voice')||h('balanced'))&&!h('final_numbers')?10:0,max:10,note:(h('voice')||h('balanced'))&&!h('final_numbers')?'保护反馈或改进奖励，也如实交代未完成的事。':'需要留下可持续的做法，并完整说明结果。'}
+ ];return {total:rows.reduce((n,r)=>n+r.points,0),perfect:endingFor(s)==='relay',rows};
 }

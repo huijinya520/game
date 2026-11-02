@@ -1,1 +1,10 @@
-{"name":"last-red-line","version":"4.0.0","private":true,"scripts":{"start":"npm --prefix cinematic-web start","test":"npm --prefix cinematic-web test","build":"npm --prefix cinematic-web run build"}}
+{
+  "name": "last-red-line",
+  "version": "5.0.0",
+  "private": true,
+  "scripts": {
+    "start": "npm --prefix cinematic-web start",
+    "test": "npm --prefix cinematic-web test",
+    "build": "npm --prefix cinematic-web run build"
+  }
+}
